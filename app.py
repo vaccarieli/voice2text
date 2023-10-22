@@ -29,7 +29,7 @@ class App:
         return all_files
 
     def launch(self):
-        model_size = "tiny"  # Set your desired model size
+        model_size = "large"  # Set your desired model size
         lang = "Automatic Detection"  # Set your desired source language
         file_format = "SRT"  # Set your desired output format
         istranslate = False  # Set to True if you want to enable translation
@@ -73,12 +73,6 @@ parser.add_argument(
     nargs="?",
     const=True,
     help="Disable the faster_whisper implementation. faster_whipser is implemented by https://github.com/guillaumekln/faster-whisper",
-)
-# Add the argument for input paths
-parser.add_argument(
-    "--path",
-    nargs="*",
-    help="Path to the file(s) you want to process.",
 )
 _args = parser.parse_args()
 
