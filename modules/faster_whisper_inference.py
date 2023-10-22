@@ -96,6 +96,7 @@ class FasterWhisperInference(BaseInterface):
 
             files_info = {}
             for fileNumber, fileobj in enumerate(fileobjs, start=1):
+                os.system("clear")
                 transcribed_segments, time_for_task = self.transcribe(
                     audio=fileobj,
                     lang=lang,
@@ -361,6 +362,7 @@ class FasterWhisperInference(BaseInterface):
         )
 
         segments_result = []
+
         for segment in tqdm.tqdm(
             segments,
             total=info.duration,
