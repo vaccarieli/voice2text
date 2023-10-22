@@ -21,6 +21,7 @@ from modules.subtitle_manager import (
     safe_filename,
 )
 from modules.youtube_manager import get_ytdata, get_ytaudio
+import shutil
 
 
 class FasterWhisperInference(BaseInterface):
@@ -116,11 +117,25 @@ class FasterWhisperInference(BaseInterface):
                     add_timestamp=add_timestamp,
                     file_format=file_format,
                 )
-                print(f"{subtitle}")
                 files_info[file_name] = {
                     "subtitle": subtitle,
                     "time_for_task": time_for_task,
                 }
+                # Split the original path into directory and filename
+                dir_path, file_name = os.path.split(fileobj)
+
+                # Define the "done" folder path
+                done_folder = os.path.join(dir_path, "done")
+
+                # Check if the "done" folder exists, and if not, create it
+                if not os.path.exists(done_folder):
+                    os.mkdir(done_folder)
+
+                # Create the destination folder path by merging dir_path, "done", and file_name
+                destination_folder = os.path.join(done_folder, file_name)
+
+                # Use shutil.move to move the file to the destination subfolder
+                shutil.move(fileobj, destination_folder)
 
             total_result = ""
             total_time = 0

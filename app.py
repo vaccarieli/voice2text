@@ -20,20 +20,16 @@ class App:
         print(f'Device "{self.whisper_inf.device}" is detected')
         self.nllb_inf = NLLBInference()
 
-        if not self.args.path:
-            print("Please provide a path to the files you want to process.")
-            return
-
     def paths(self) -> list:
         all_files = []
-        for root, _, files in os.walk(self.args.path[0]):
+        for root, _, files in os.walk("/home/elios/audios/"):
             for file in files:
                 file_path = os.path.join(root, file)
                 all_files.append(file_path)
         return all_files
 
     def launch(self):
-        model_size = "large"  # Set your desired model size
+        model_size = "tiny"  # Set your desired model size
         lang = "Automatic Detection"  # Set your desired source language
         file_format = "SRT"  # Set your desired output format
         istranslate = False  # Set to True if you want to enable translation
