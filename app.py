@@ -33,7 +33,7 @@ class App:
         return all_files
 
     def launch(self):
-        model_size = "tiny"  # Set your desired model size
+        model_size = "large"  # Set your desired model size
         lang = "Automatic Detection"  # Set your desired source language
         file_format = "SRT"  # Set your desired output format
         istranslate = False  # Set to True if you want to enable translation
