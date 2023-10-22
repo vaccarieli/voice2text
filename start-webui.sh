@@ -1,11 +1,11 @@
 #!/bin/bash
 
-read -p "Path to the file(s) you want to process: " input_path
-if [ -z "$input_path" ]; then
-    echo "You did not provide a path. Exiting."
-    read -p "Press Enter to continue..."
-    exit
+if [ $# -ne 1 ]; then
+    echo "Usage: $0 <input_path>"
+    exit 1
 fi
+
+input_path="$1"
 
 activate_venv() {
     PYTHON="./venv/bin/python"
@@ -13,9 +13,9 @@ activate_venv() {
 }
 
 activate_venv
+
 launch() {
     $PYTHON app.py --path "$input_path"
-    read -p "Press Enter to continue..."
     exit
 }
 
