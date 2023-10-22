@@ -1,22 +1,26 @@
 #!/bin/bash
 
-if [ $# -ne 1 ]; then
-    echo "Usage: $0 <input_path>"
+if [ $# -eq 0 ]; then
+    echo "Usage: $0 <path>"
     exit 1
 fi
 
-input_path="$1"
+# Accept the path as an argument
+PATH_TO_VENV="$1"
 
-activate_venv() {
-    PYTHON="./venv/bin/python"
-    echo "venv $PYTHON"
-}
+# Check if the virtual environment exists
+if [ ! -d "$PATH_TO_VENV" ]; then
+    echo "Virtual environment not found at: $PATH_TO_VENV"
+    exit 1
+fi
 
-activate_venv
+source "$PATH_TO_VENV/bin/activate"
 
-launch() {
-    $PYTHON app.py --path "$input_path"
-    exit
-}
+PYTHON="$PATH_TO_VENV/bin/python"
+echo "Using Python from virtual environment: $PYTHON"
+echo ""
 
-launch
+# Assuming your Python script is named app.py, you can pass additional arguments if needed
+python app.py "${@:2}"
+
+deactivate
