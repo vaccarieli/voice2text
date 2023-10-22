@@ -13,6 +13,6 @@ PYTHON="venv/bin/python"
 echo "venv ${PYTHON}"
 echo ""
 
-python app.py "$path"
+python app.py --path "$path"
 
 deactivate
