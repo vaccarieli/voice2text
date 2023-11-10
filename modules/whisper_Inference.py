@@ -7,11 +7,11 @@ import numpy as np
 from datetime import datetime
 import torch
 import subprocess
-
+import re
 from .base_interface import BaseInterface
 from modules.subtitle_manager import get_srt, get_vtt, get_txt, write_file, safe_filename
 from modules.youtube_manager import get_ytdata, get_ytaudio
-
+import sys
 DEFAULT_MODEL_SIZE = "large-v3"
 import traceback
 import shutil
@@ -137,6 +137,7 @@ class WhisperInference(BaseInterface):
             return f"Error transcribing file: {str(e)}"
         finally:
             self.release_cuda_memory()
+            sys.exit()
 
     def transcribe_youtube(self,
                            youtubelink: str,
