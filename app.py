@@ -7,6 +7,7 @@ import os
 
 class App:
     def __init__(self, args):
+        self.folder_name = "simpsons"
         self.args = args
         self.whisper_inf = (
             WhisperInference()
@@ -22,21 +23,21 @@ class App:
 
     def paths(self) -> list:
         all_files = []
-        for root, _, files in os.walk("/home/elios/audios/"):
+        for root, dirs, files in os.walk(f"/home/elios/audios/{self.folder_name}/"):
             for file in files:
                 file_path = os.path.join(root, file)
                 all_files.append(file_path)
-        return all_files
+        return sorted(all_files)
 
     def launch(self):
-        model_size = "large"  # Set your desired model size
-        lang = "Automatic Detection"  # Set your desired source language
+        model_size = "large-v3"  # Set your desired model size
+        lang = "italian"  # Set your desired source language
         file_format = "SRT"  # Set your desired output format
         istranslate = False  # Set to True if you want to enable translation
         add_timestamp = False  # Set to True if you want to add a timestamp
-        beam_size = 1  # Set your desired beam size
-        log_prob_threshold = -1  # Set your desired log probability threshold
-        no_speech_threshold = 0.6  # Set your desired no_speech threshold
+        beam_size = 2  # Set your desired beam size
+        log_prob_threshold = -0.8  # Set your desired log probability threshold
+        no_speech_threshold = 0.5  # Set your desired no_speech threshold
         compute_type = "float32"  # Set your desired compute type
 
         self.whisper_inf.transcribe_file(
@@ -50,6 +51,7 @@ class App:
             log_prob_threshold,
             no_speech_threshold,
             compute_type,
+            self.folder_name
         )
         #     btn_run.click(fn=self.whisper_inf.transcribe_youtube,
         #                   inputs=params + advanced_params,

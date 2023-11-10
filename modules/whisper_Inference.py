@@ -11,8 +11,9 @@ from .base_interface import BaseInterface
 from modules.subtitle_manager import get_srt, get_vtt, get_txt, write_file, safe_filename
 from modules.youtube_manager import get_ytdata, get_ytaudio
 
-DEFAULT_MODEL_SIZE = "large-v2"
-
+DEFAULT_MODEL_SIZE = "large-v3"
+import traceback
+import shutil
 
 class WhisperInference(BaseInterface):
     def __init__(self):
@@ -37,7 +38,8 @@ class WhisperInference(BaseInterface):
                         log_prob_threshold: float,
                         no_speech_threshold: float,
                         compute_type: str,
-                        progress=gr.Progress()):
+                        folder_name: str,
+                        ):
         """
         Write subtitle file from Files
 
@@ -73,12 +75,11 @@ class WhisperInference(BaseInterface):
         """
 
         try:
-            self.update_model_if_needed(model_size=model_size, compute_type=compute_type, progress=progress)
+            self.update_model_if_needed(model_size=model_size, compute_type=compute_type)
 
             files_info = {}
             for fileobj in fileobjs:
-                progress(0, desc="Loading Audio..")
-                audio = whisper.load_audio(fileobj.name)
+                audio = whisper.load_audio(fileobj)
 
                 result, elapsed_time = self.transcribe(audio=audio,
                                                        lang=lang,
@@ -87,11 +88,9 @@ class WhisperInference(BaseInterface):
                                                        log_prob_threshold=log_prob_threshold,
                                                        no_speech_threshold=no_speech_threshold,
                                                        compute_type=compute_type,
-                                                       progress=progress
                                                        )
-                progress(1, desc="Completed!")
 
-                file_name, file_ext = os.path.splitext(os.path.basename(fileobj.orig_name))
+                file_name, file_ext = os.path.splitext(os.path.basename(fileobj))
                 file_name = safe_filename(file_name)
                 subtitle = self.generate_and_write_file(
                     file_name=file_name,
@@ -101,6 +100,19 @@ class WhisperInference(BaseInterface):
                 )
 
                 files_info[file_name] = {"subtitle": subtitle, "elapsed_time": elapsed_time}
+
+                # Define the "done" folder path
+                done_folder = f"/home/elios/done/{folder_name}/"
+
+                # Check if the "done" folder exists, and if not, create it
+                if not os.path.exists(done_folder):
+                    os.mkdirs(done_folder)
+
+                # Create the destination folder path by merging dir_path, "done", and file_name
+                destination_folder = os.path.join(done_folder, file_name)
+
+                # Use shutil.move to move the file to the destination subfolder
+                shutil.move(fileobj, destination_folder)
 
             total_result = ''
             total_time = 0
@@ -112,11 +124,10 @@ class WhisperInference(BaseInterface):
 
             return f"Done in {self.format_time(total_time)}! Subtitle is in the outputs folder.\n\n{total_result}"
         except Exception as e:
-            print(f"Error transcribing file: {str(e)}")
+            traceback.print_exc()
             return f"Error transcribing file: {str(e)}"
         finally:
             self.release_cuda_memory()
-            self.remove_input_files([fileobj.name for fileobj in fileobjs])
 
     def transcribe_youtube(self,
                            youtubelink: str,
@@ -128,8 +139,7 @@ class WhisperInference(BaseInterface):
                            beam_size: int,
                            log_prob_threshold: float,
                            no_speech_threshold: float,
-                           compute_type: str,
-                           progress=gr.Progress()):
+                           compute_type: str):
         """
         Write subtitle file from Youtube
 
@@ -164,9 +174,8 @@ class WhisperInference(BaseInterface):
             I use a forked version of whisper for this. To see more info : https://github.com/jhj0517/jhj0517-whisper/tree/add-progress-callback
         """
         try:
-            self.update_model_if_needed(model_size=model_size, compute_type=compute_type, progress=progress)
+            self.update_model_if_needed(model_size=model_size, compute_type=compute_type)
 
-            progress(0, desc="Loading Audio from Youtube..")
             yt = get_ytdata(youtubelink)
             audio = whisper.load_audio(get_ytaudio(yt))
 
@@ -177,8 +186,7 @@ class WhisperInference(BaseInterface):
                                                    log_prob_threshold=log_prob_threshold,
                                                    no_speech_threshold=no_speech_threshold,
                                                    compute_type=compute_type,
-                                                   progress=progress)
-            progress(1, desc="Completed!")
+                        )
 
             file_name = safe_filename(yt.title)
             subtitle = self.generate_and_write_file(
@@ -215,7 +223,7 @@ class WhisperInference(BaseInterface):
                        log_prob_threshold: float,
                        no_speech_threshold: float,
                        compute_type: str,
-                       progress=gr.Progress()):
+):
         """
         Write subtitle file from microphone
 
@@ -249,7 +257,7 @@ class WhisperInference(BaseInterface):
         """
 
         try:
-            self.update_model_if_needed(model_size=model_size, compute_type=compute_type, progress=progress)
+            self.update_model_if_needed(model_size=model_size, compute_type=compute_type)
 
             result, elapsed_time = self.transcribe(audio=micaudio,
                                                    lang=lang,
@@ -258,8 +266,7 @@ class WhisperInference(BaseInterface):
                                                    log_prob_threshold=log_prob_threshold,
                                                    no_speech_threshold=no_speech_threshold,
                                                    compute_type=compute_type,
-                                                   progress=progress)
-            progress(1, desc="Completed!")
+                                                   )
 
             subtitle = self.generate_and_write_file(
                 file_name="Mic",
@@ -284,7 +291,6 @@ class WhisperInference(BaseInterface):
                    log_prob_threshold: float,
                    no_speech_threshold: float,
                    compute_type: str,
-                   progress: gr.Progress
                    ) -> Tuple[list[dict], float]:
         """
         transcribe method for OpenAI's Whisper implementation.
@@ -321,8 +327,7 @@ class WhisperInference(BaseInterface):
         """
         start_time = time.time()
 
-        def progress_callback(progress_value):
-            progress(progress_value, desc="Transcribing..")
+
 
         if lang == "Automatic Detection":
             lang = None
@@ -336,7 +341,7 @@ class WhisperInference(BaseInterface):
                                                 no_speech_threshold=no_speech_threshold,
                                                 task="translate" if istranslate and self.current_model_size in translatable_model else "transcribe",
                                                 fp16=True if compute_type == "float16" else False,
-                                                progress_callback=progress_callback)["segments"]
+                                               )["segments"]
         elapsed_time = time.time() - start_time
 
         return segments_result, elapsed_time
@@ -344,7 +349,6 @@ class WhisperInference(BaseInterface):
     def update_model_if_needed(self,
                                model_size: str,
                                compute_type: str,
-                               progress: gr.Progress,
                                ):
         """
         Initialize model if it doesn't match with current model setting
@@ -352,7 +356,6 @@ class WhisperInference(BaseInterface):
         if compute_type != self.current_compute_type:
             self.current_compute_type = compute_type
         if model_size != self.current_model_size or self.model is None:
-            progress(0, desc="Initializing Model..")
             self.current_model_size = model_size
             self.model = whisper.load_model(
                 name=model_size,
