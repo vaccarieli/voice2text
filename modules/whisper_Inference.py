@@ -17,12 +17,11 @@ import traceback
 import shutil
 
 def extract_season(text):
-    import re
-    pattern = r'(S)(\d{2})'  # Pattern to match S followed by two digits
+    pattern = r'(S\d{2})'  # Pattern to match 'S' and the following two digits
 
-    result = re.match(pattern, text)
+    result = re.search(pattern, text)
     if result:
-        return "Season " + f"{int(result.group(2))}"
+        return "Season " + str(int(result.group(1).strip("S")))
 
 class WhisperInference(BaseInterface):
     def __init__(self):
@@ -116,13 +115,13 @@ class WhisperInference(BaseInterface):
 
                 # Check if the "done" folder exists, and if not, create it
                 if not os.path.exists(done_folder):
-                    os.mkdirs(done_folder)
+                    os.makedirs(done_folder)
 
                 # Create the destination folder path by merging dir_path, "done", and file_name
                 destination_folder = os.path.join(done_folder, file_name)
 
                 # Use shutil.move to move the file to the destination subfolder
-                shutil.move(fileobj, destination_folder)
+                shutil.move(fileobj, destination_folder+".mp3")
 
             total_result = ''
             total_time = 0
