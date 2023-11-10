@@ -6,6 +6,7 @@ from typing import BinaryIO, Union, Tuple
 import numpy as np
 from datetime import datetime
 import torch
+import subprocess
 
 from .base_interface import BaseInterface
 from modules.subtitle_manager import get_srt, get_vtt, get_txt, write_file, safe_filename
@@ -14,6 +15,14 @@ from modules.youtube_manager import get_ytdata, get_ytaudio
 DEFAULT_MODEL_SIZE = "large-v3"
 import traceback
 import shutil
+
+def extract_season(text):
+    import re
+    pattern = r'(S)(\d{2})'  # Pattern to match S followed by two digits
+
+    result = re.match(pattern, text)
+    if result:
+        return "Season " + f"{int(result.group(2))}"
 
 class WhisperInference(BaseInterface):
     def __init__(self):
@@ -96,7 +105,8 @@ class WhisperInference(BaseInterface):
                     file_name=file_name,
                     transcribed_segments=result,
                     add_timestamp=add_timestamp,
-                    file_format=file_format
+                    file_format=file_format,
+                    folder_name=folder_name
                 )
 
                 files_info[file_name] = {"subtitle": subtitle, "elapsed_time": elapsed_time}
@@ -368,6 +378,7 @@ class WhisperInference(BaseInterface):
                                 transcribed_segments: list,
                                 add_timestamp: bool,
                                 file_format: str,
+                                folder_name: str,
                                 ) -> str:
         """
         This method writes subtitle file and returns str to gr.Textbox
@@ -381,7 +392,12 @@ class WhisperInference(BaseInterface):
         if file_format == "SRT":
             content = get_srt(transcribed_segments)
             write_file(content, f"{output_path}.srt")
-
+            src = f"{output_path}.srt"  # "/home/elios/voice2text/outputs/S01E02 - Bart the Genius (1989) 360p [DigiPelis].srt"
+            season = extract_season(src)
+            dest = f"WEBDAVSynology:/Series/{folder_name}/{season}/"
+            subprocess.run(["rclone", "copy", src, dest])
+           
+            
         elif file_format == "WebVTT":
             content = get_vtt(transcribed_segments)
             write_file(content, f"{output_path}.vtt")

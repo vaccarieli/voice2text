@@ -7,7 +7,7 @@ import os
 
 class App:
     def __init__(self, args):
-        self.folder_name = "simpsons"
+        self.folder_name = "The Simpsons (1989)"
         self.args = args
         self.whisper_inf = (
             WhisperInference()
