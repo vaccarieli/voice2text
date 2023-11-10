@@ -35,9 +35,9 @@ class App:
         file_format = "SRT"  # Set your desired output format
         istranslate = False  # Set to True if you want to enable translation
         add_timestamp = False  # Set to True if you want to add a timestamp
-        beam_size = 2  # Set your desired beam size
-        log_prob_threshold = -0.8  # Set your desired log probability threshold
-        no_speech_threshold = 0.5  # Set your desired no_speech threshold
+        beam_size = 1  # Set your desired beam size
+        log_prob_threshold = -1  # Set your desired log probability threshold
+        no_speech_threshold = 0.6  # Set your desired no_speech threshold
         compute_type = "float32"  # Set your desired compute type
 
         self.whisper_inf.transcribe_file(
