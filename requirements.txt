@@ -5,3 +5,4 @@ faster-whisper
 transformers
 gradio==3.37.0
 pytube
+natsort
