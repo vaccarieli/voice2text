@@ -45,6 +45,7 @@ class WhisperInference(BaseInterface):
                         beam_size: int,
                         log_prob_threshold: float,
                         no_speech_threshold: float,
+                        condition_on_previous_text: float,
                         compute_type: str,
                         folder_name: str,
                         ):
@@ -87,6 +88,8 @@ class WhisperInference(BaseInterface):
 
             files_info = {}
             for fileobj in fileobjs:
+                os.system('clear')
+                print(fileobj)
                 audio = whisper.load_audio(fileobj)
 
                 result, elapsed_time = self.transcribe(audio=audio,
@@ -95,6 +98,7 @@ class WhisperInference(BaseInterface):
                                                        beam_size=beam_size,
                                                        log_prob_threshold=log_prob_threshold,
                                                        no_speech_threshold=no_speech_threshold,
+                                                       condition_on_previous_text=condition_on_previous_text,
                                                        compute_type=compute_type,
                                                        )
 
@@ -121,23 +125,24 @@ class WhisperInference(BaseInterface):
                 destination_folder = os.path.join(done_folder, file_name)
 
                 # Use shutil.move to move the file to the destination subfolder
-                shutil.move(fileobj, destination_folder+".mp3")
+                # shutil.move(fileobj, destination_folder+".aac")
+                break
 
-            total_result = ''
-            total_time = 0
-            for file_name, info in files_info.items():
-                total_result += '------------------------------------\n'
-                total_result += f'{file_name}\n\n'
-                total_result += f"{info['subtitle']}"
-                total_time += info["elapsed_time"]
+            # total_result = ''
+            # total_time = 0
+            # for file_name, info in files_info.items():
+            #     total_result += '------------------------------------\n'
+            #     total_result += f'{file_name}\n\n'
+            #     total_result += f"{info['subtitle']}"
+            #     total_time += info["elapsed_time"]
 
-            return f"Done in {self.format_time(total_time)}! Subtitle is in the outputs folder.\n\n{total_result}"
+            # return f"Done in {self.format_time(total_time)}! Subtitle is in the outputs folder.\n\n{total_result}"
         except Exception as e:
             traceback.print_exc()
             return f"Error transcribing file: {str(e)}"
         finally:
             self.release_cuda_memory()
-            sys.exit()
+            print("Finished....")
 
     def transcribe_youtube(self,
                            youtubelink: str,
@@ -300,6 +305,7 @@ class WhisperInference(BaseInterface):
                    beam_size: int,
                    log_prob_threshold: float,
                    no_speech_threshold: float,
+                   condition_on_previous_text: float,
                    compute_type: str,
                    ) -> Tuple[list[dict], float]:
         """
@@ -336,8 +342,21 @@ class WhisperInference(BaseInterface):
             elapsed time for transcription
         """
         start_time = time.time()
-
-
+    # model: "Whisper",
+    # audio: Union[str, np.ndarray, torch.Tensor],
+    # *,
+    # verbose: Optional[bool] = None,
+    # temperature: Union[float, Tuple[float, ...]] = (0.0, 0.2, 0.4, 0.6, 0.8, 1.0),
+    # compression_ratio_threshold: Optional[float] = 2.4,
+    # logprob_threshold: Optional[float] = -1.0,
+    # no_speech_threshold: Optional[float] = 0.6,
+    # condition_on_previous_text: bool = True,
+    # initial_prompt: Optional[str] = None,
+    # word_timestamps: bool = False,
+    # prepend_punctuations: str = "\"'“¿([{-",
+    # append_punctuations: str = "\"'.。,，!！?？:：”)]}、",
+    # progress_callback: Optional[Callable[[float], None]] = None,
+    # **decode_options,
 
         if lang == "Automatic Detection":
             lang = None
@@ -349,6 +368,7 @@ class WhisperInference(BaseInterface):
                                                 beam_size=beam_size,
                                                 logprob_threshold=log_prob_threshold,
                                                 no_speech_threshold=no_speech_threshold,
+                                                condition_on_previous_text=condition_on_previous_text,
                                                 task="translate" if istranslate and self.current_model_size in translatable_model else "transcribe",
                                                 fp16=True if compute_type == "float16" else False,
                                                )["segments"]

@@ -3,7 +3,7 @@ from modules.whisper_Inference import WhisperInference
 from modules.faster_whisper_inference import FasterWhisperInference
 from modules.nllb_inference import NLLBInference
 import os
-
+import sys
 
 class App:
     def __init__(self, args):
@@ -23,10 +23,11 @@ class App:
 
     def paths(self) -> list:
         all_files = []
-        for root, dirs, files in os.walk(f"/home/elios/audios/{self.folder_name}/"):
+        for root, _, files in os.walk(f"/home/elios/audios/{self.folder_name}/"):
             for file in files:
-                file_path = os.path.join(root, file)
-                all_files.append(file_path)
+                if not file.endswith(".mp3") and not file.endswith(".log"):
+                    file_path = os.path.join(root, file)
+                    all_files.append(file_path)
         return sorted(all_files)
 
     def launch(self):
@@ -36,8 +37,9 @@ class App:
         istranslate = False  # Set to True if you want to enable translation
         add_timestamp = False  # Set to True if you want to add a timestamp
         beam_size = 1  # Set your desired beam size
-        log_prob_threshold = -1  # Set your desired log probability threshold
-        no_speech_threshold = 0.6  # Set your desired no_speech threshold
+        log_prob_threshold = -1.0  # Set your desired log probability threshold
+        no_speech_threshold = 0.1  # Set your desired no_speech threshold
+        condition_on_previous_text = False # 
         compute_type = "float32"  # Set your desired compute type
 
         self.whisper_inf.transcribe_file(
@@ -50,6 +52,7 @@ class App:
             beam_size,
             log_prob_threshold,
             no_speech_threshold,
+            condition_on_previous_text,
             compute_type,
             self.folder_name
         )
