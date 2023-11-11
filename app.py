@@ -4,6 +4,8 @@ from modules.faster_whisper_inference import FasterWhisperInference
 from modules.nllb_inference import NLLBInference
 import os
 import sys
+from natsort import natsorted
+
 
 class App:
     def __init__(self, args):
@@ -28,7 +30,8 @@ class App:
                 if not file.endswith(".mp3") and not file.endswith(".log"):
                     file_path = os.path.join(root, file)
                     all_files.append(file_path)
-        return sorted(all_files)
+
+        return natsorted(all_files)
 
     def launch(self):
         model_size = "large-v3"  # Set your desired model size
@@ -39,7 +42,7 @@ class App:
         beam_size = 1  # Set your desired beam size
         log_prob_threshold = -1.0  # Set your desired log probability threshold
         no_speech_threshold = 0.1  # Set your desired no_speech threshold
-        condition_on_previous_text = False # 
+        condition_on_previous_text = False  #
         compute_type = "float32"  # Set your desired compute type
 
         self.whisper_inf.transcribe_file(
@@ -54,7 +57,7 @@ class App:
             no_speech_threshold,
             condition_on_previous_text,
             compute_type,
-            self.folder_name
+            self.folder_name,
         )
         #     btn_run.click(fn=self.whisper_inf.transcribe_youtube,
         #                   inputs=params + advanced_params,
