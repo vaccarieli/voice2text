@@ -123,26 +123,16 @@ class WhisperInference(BaseInterface):
 
                 # Create the destination folder path by merging dir_path, "done", and file_name
                 destination_folder = os.path.join(done_folder, file_name)
+                _, file_extension = os.path.splitext(fileobj)
 
                 # Use shutil.move to move the file to the destination subfolder
-                # shutil.move(fileobj, destination_folder+".aac")
-                break
+                shutil.move(fileobj, destination_folder+file_extension)
 
-            # total_result = ''
-            # total_time = 0
-            # for file_name, info in files_info.items():
-            #     total_result += '------------------------------------\n'
-            #     total_result += f'{file_name}\n\n'
-            #     total_result += f"{info['subtitle']}"
-            #     total_time += info["elapsed_time"]
-
-            # return f"Done in {self.format_time(total_time)}! Subtitle is in the outputs folder.\n\n{total_result}"
         except Exception as e:
             traceback.print_exc()
             return f"Error transcribing file: {str(e)}"
         finally:
             self.release_cuda_memory()
-            print("Finished....")
 
     def transcribe_youtube(self,
                            youtubelink: str,
@@ -342,21 +332,6 @@ class WhisperInference(BaseInterface):
             elapsed time for transcription
         """
         start_time = time.time()
-    # model: "Whisper",
-    # audio: Union[str, np.ndarray, torch.Tensor],
-    # *,
-    # verbose: Optional[bool] = None,
-    # temperature: Union[float, Tuple[float, ...]] = (0.0, 0.2, 0.4, 0.6, 0.8, 1.0),
-    # compression_ratio_threshold: Optional[float] = 2.4,
-    # logprob_threshold: Optional[float] = -1.0,
-    # no_speech_threshold: Optional[float] = 0.6,
-    # condition_on_previous_text: bool = True,
-    # initial_prompt: Optional[str] = None,
-    # word_timestamps: bool = False,
-    # prepend_punctuations: str = "\"'“¿([{-",
-    # append_punctuations: str = "\"'.。,，!！?？:：”)]}、",
-    # progress_callback: Optional[Callable[[float], None]] = None,
-    # **decode_options,
 
         if lang == "Automatic Detection":
             lang = None
