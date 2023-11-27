@@ -9,7 +9,7 @@ from natsort import natsorted
 
 class App:
     def __init__(self, args):
-        self.folder_name = "The Simpsons (1989)"
+        self.folder_name = "Dragon Ball Super (2015)"
         self.args = args
         self.whisper_inf = (
             WhisperInference()
